@@ -1,0 +1,22 @@
+{
+  "manifest_version": 2,
+  "name": "Productivity Puzzle",
+  "version": "0.1.0",
+  "description": "Productivity Puzzle",
+  "icons": {
+    "48": "icons/border-48.png"
+  },
+
+  "permissions": ["scripting", "<all_urls>"],
+
+  "background": {
+    "scripts": ["main.js"],
+    "persistent": true
+  },
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "aboutlife@woynert.com"
+    }
+  }
+}

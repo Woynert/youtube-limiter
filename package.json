@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "prettier": "^3.2.5"
+  },
+  "scripts": {
+    "format": "npx prettier . -w",
+    "package": "zip -r extension-$(date +%s).zip *.js *.html icons manifest.json"
+  }
+}
