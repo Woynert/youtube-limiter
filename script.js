@@ -247,6 +247,9 @@ function checkURL(){
 	console.log(`page change: ${prevURL} -> ${location.href}\npathname: ${location.pathname}`);
 	prevURL = location.href;
 
+    // ignore youtube studio
+    if (location.hostname === 'studio.youtube.com') return;
+
 	// video viewer or shorts video viewer
 	if (location.pathname === '/watch' || ((location.href).indexOf("shorts") > -1)) {
 
