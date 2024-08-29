@@ -528,11 +528,11 @@ const DOMInjector = new class {
     // gray scale images
     styles += ' img { -webkit-filter: grayscale(90%); filter: grayscale(90%); }';
 
-    // reformat text
+    // reformat titles text
     styles += `
-    * {text-transform: lowercase !important;}
-    *::first-letter {text-transform: uppercase !important;}
+    #video-title, #title { text-transform: lowercase !important; }
     a {text-transform: initial !important;}
+    input {text-transform: initial !important;}
     `;
 
     // hide from the search results "latest from youtuber", "you've seen before", "people have also seen", also shorts
@@ -591,7 +591,7 @@ const DOMInjector = new class {
 	min-height: 0px !important;
   }
 
-  /* shorts tha use this song */
+  /* shorts that use this song */
   #items > ytd-reel-shelf-renderer { display: none !important; }
 
   `);
