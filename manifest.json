@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Productivity Puzzle",
+  "name": "Youtube Limiter",
   "version": "0.1.0",
-  "description": "Productivity Puzzle",
+  "description": "Youtube Limiter",
   "icons": {
     "48": "icons/border-48.png"
   },
@@ -16,7 +16,7 @@
 
   "browser_specific_settings": {
     "gecko": {
-      "id": "propuzzle@woynert.com"
+      "id": "youtube-limiter@woynert.com"
     }
   }
 }
