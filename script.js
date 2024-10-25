@@ -31,9 +31,7 @@
  *   minute_message_launched: Array[int] # each int represents the message for 5,4,3,2,1 minutes
  */
 
-
 const state = {
-
   // loop
 
   PROCESS_TICK_RATE: 1,
@@ -66,38 +64,34 @@ const state = {
   style_element: null,
   button_element: null,
   label_element: null,
-}
-
+};
 
 // ===========================================
 // Loop / Time Tracking
 // ===========================================
 
-
-function debug(text){
+function debug(text) {
   if (!state.debugging) return;
   console.log(`woy: youtube limit: ${text}`);
 }
 
-function debug_error(error){
+function debug_error(error) {
   if (!state.debugging) return;
   console.error(error);
 }
 
-
 function setup() {
-  debug("running setup")
+  debug("running setup");
 }
-
 
 function process() {
   // setup
-  if (!isVideoElementValid()){
+  if (!isVideoElementValid()) {
     getVideoElement();
     return;
   }
 
-  if (!state.controls_were_injected && readyToInject()){
+  if (!state.controls_were_injected && readyToInject()) {
     setupInjection();
     state.controls_were_injected = true;
   }
@@ -110,7 +104,7 @@ function process() {
   if (isVideoPlaying()) {
     if (!state.was_video_playing) {
       state.was_video_playing = true;
-      state.chunk_time_start = Date.now()
+      state.chunk_time_start = Date.now();
     }
 
     calculateTime();
@@ -129,66 +123,68 @@ function process() {
     if (absolute_time >= state.TIME_LIMIT_MS) {
       hideVideo();
     }
-  }
-  else {
+  } else {
     state.was_video_playing = false;
   }
 
   // update visuals
+  // TODO: Update only when window is visible
   if (state.controls_were_injected) {
-
     // update label
 
     setLabelText(formatMilliseconds(absolute_time));
 
-    // TODO: Do not run each frame
     // update style when limit is reached
+    // TODO: Do not run each frame
     if (absolute_time >= state.TIME_LIMIT_MS) {
-      state.button_element.parentElement.classList.add('woy-yt-timer__container-limited');
+      state.button_element.parentElement.classList.add(
+        "woy-yt-timer__container-limited",
+      );
     }
   }
 
   //debug(`playing? ${isVideoPlaying()}\nchunk ${formatMilliseconds(getLocalElapsedTime())}\nstored ${formatMilliseconds(readTotalStoredTime())}\nstored-curr ${formatMilliseconds(getAbsoluteElapsedTime())}`)
 }
 
-
 async function processLoop() {
-    while (true) {
-        process();
-        state.ticks += 1;
-        await sleep(1000 / state.PROCESS_TICK_RATE);
-    }
+  while (true) {
+    process();
+    state.ticks += 1;
+    await sleep(1000 / state.PROCESS_TICK_RATE);
+  }
 }
-
 
 // @returns boolean
 function isVideoElementValid() {
-  if (state.video_element == null){
-    return false
+  if (state.video_element == null) {
+    return false;
   }
   /*if (!state.video_element.checkVisibility()){
     return false
   }*/
   if (!state.video_element.isConnected) {
-    return false
+    return false;
   }
-  return true
+  return true;
 }
 
-
-function getVideoElement(){
-  state.video_element = document.querySelector(".video-stream.html5-main-video")
+function getVideoElement() {
+  state.video_element = document.querySelector(
+    ".video-stream.html5-main-video",
+  );
 }
-
 
 // @returns boolean
 function isVideoPlaying() {
-  if (!document.hidden && !state.video_element.paused && !state.video_is_hidden) {
-    return true
+  if (
+    !document.hidden &&
+    !state.video_element.paused &&
+    !state.video_is_hidden
+  ) {
+    return true;
   }
-  return false
+  return false;
 }
-
 
 function calculateTime() {
   var curr_time = Date.now();
@@ -198,30 +194,28 @@ function calculateTime() {
   state.total_elapsed_time += state.chunk_elapsed_time;
 }
 
-
 function getLocalElapsedTime() {
   return state.total_elapsed_time + state.chunk_elapsed_time;
 }
 
-
 function getAbsoluteElapsedTime() {
-  return readTotalStoredTime() + getLocalElapsedTime() - state.visual_last_saved_time;
+  return (
+    readTotalStoredTime() + getLocalElapsedTime() - state.visual_last_saved_time
+  );
 }
-
 
 // ===========================================
 // IO: Local Storage
 // ===========================================
 
-
 // updates local data cache
-async function readData (){
+async function readData() {
   try {
     const raw_data = await browser.storage.local.get(state.DATA_KEY);
     if (raw_data) {
-        const data = JSON.parse(raw_data[state.DATA_KEY]);
-        state.last_read_data = data;
-        return;
+      const data = JSON.parse(raw_data[state.DATA_KEY]);
+      state.last_read_data = data;
+      return;
     }
   } catch (error) {
     debug_error(error);
@@ -230,9 +224,8 @@ async function readData (){
   state.last_read_data = null;
 }
 
-
 // @argument JSON Object
-function writeData (data){
+function writeData(data) {
   if (data == null) return;
   let to_store = {};
   to_store[state.DATA_KEY] = JSON.stringify(data);
@@ -240,11 +233,9 @@ function writeData (data){
   browser.storage.local.set(to_store);
 }
 
-
 // @argument seed: int
 // @argument time: int
-function writeElapsedTime (seed, time){
-
+function writeElapsedTime(seed, time) {
   let reset_data = false;
   let data = state.last_read_data;
   let instance_id = `${state.INSTANCE_ID}`;
@@ -266,48 +257,45 @@ function writeElapsedTime (seed, time){
 
   // reset data
   if (reset_data) {
-    debug("resetting data")
+    debug("resetting data");
     data = {
-        day: getCurrentMonthDay(),
-        records: {},
-        minute_message_launched: [],
+      day: getCurrentMonthDay(),
+      records: {},
+      minute_message_launched: [],
     };
   }
 
   // save record
-  data["records"][instance_id] = getLocalElapsedTime()
-  state.visual_last_saved_time = data["records"][instance_id]
+  data["records"][instance_id] = getLocalElapsedTime();
+  state.visual_last_saved_time = data["records"][instance_id];
 
   // write
   debug(JSON.stringify(data));
-  debug(instance_id)
+  debug(instance_id);
   writeData(data);
 }
 
-
 // @returns total_time: int
-function readTotalStoredTime () {
-
+function readTotalStoredTime() {
   let reset_data = false;
   let data = state.last_read_data;
   let instance_id = `${state.INSTANCE_ID}`;
 
   try {
+    let elapsed_accumulator = 0;
+    let records = data["records"];
 
-      let elapsed_accumulator = 0;
-      let records = data["records"];
+    for (let key in records) {
+      if (records.hasOwnProperty(key)) {
+        let number = records[key];
 
-      for (let key in records) {
-        if (records.hasOwnProperty(key)) {
-          let number = records[key];
+        if (parseInt(number) == NaN) continue;
 
-          if (parseInt(number) == NaN) continue
-
-          elapsed_accumulator += parseInt(number);
-        }
+        elapsed_accumulator += parseInt(number);
       }
+    }
 
-      return elapsed_accumulator;
+    return elapsed_accumulator;
   } catch (error) {
     debug_error(error);
   }
@@ -315,27 +303,23 @@ function readTotalStoredTime () {
   return 0;
 }
 
-
 // ===========================================
 // DOM Injection / Modification
 // ===========================================
-
 
 // @return boolean
 function readyToInject() {
   let html_body = document.getElementsByTagName("body").length > 0;
   let html_head = document.getElementsByTagName("head").length > 0;
-  return (html_body && html_head)
+  return html_body && html_head;
 }
 
-
 function setupInjection() {
-
-  let body_container = document.createElement('div');
-  let general_style = document.createElement('style');
-  general_style.type = 'text/css';
-  state.style_element = document.createElement('style');
-  state.style_element.type = 'text/css';
+  let body_container = document.createElement("div");
+  let general_style = document.createElement("style");
+  general_style.type = "text/css";
+  state.style_element = document.createElement("style");
+  state.style_element.type = "text/css";
 
   let html_body = document.getElementsByTagName("body")[0];
   let html_head = document.getElementsByTagName("head")[0];
@@ -343,14 +327,14 @@ function setupInjection() {
   html_head.appendChild(general_style);
   html_head.appendChild(state.style_element);
 
-  body_container.innerHTML = (`
+  body_container.innerHTML = `
       <div class="woy-yt-timer__container">
         <p id="woy-yt-timer__label">00:00:00</p>
         <button type="button" id="woy-yt-timer__button">Lights On</button>
       </div>
-  `);
+  `;
 
-  general_style.innerHTML = (`
+  general_style.innerHTML = `
       .woy-yt-timer__container{
         position: fixed;
         top: 0;
@@ -377,7 +361,7 @@ function setupInjection() {
       #woy-yt-timer__button{
         display: inline-block;
       }
-  `);
+  `;
 
   // select
 
@@ -390,29 +374,25 @@ function setupInjection() {
   hideVideo();
 }
 
-
 function onButtonClick() {
-  debug(`button clicked ${state.video_is_hidden}`)
+  debug(`button clicked ${state.video_is_hidden}`);
   if (state.video_is_hidden) {
     revealVideo();
-  }
-  else{
+  } else {
     hideVideo();
   }
 }
 
-
-function hideVideo () {
+function hideVideo() {
   state.video_is_hidden = true;
-  state.style_element.innerHTML = (`
+  state.style_element.innerHTML = `
     .html5-video-container > video:first-child { display: none !important; }
-  `);
+  `;
   state.button_element.innerText = "Lights On";
 }
 
-
-function revealVideo () {
-  if (getAbsoluteElapsedTime() >= state.TIME_LIMIT_MS){
+function revealVideo() {
+  if (getAbsoluteElapsedTime() >= state.TIME_LIMIT_MS) {
     return;
   }
   state.video_is_hidden = false;
@@ -421,25 +401,24 @@ function revealVideo () {
 }
 
 // @argument text: String
-function setLabelText (text) {
+function setLabelText(text) {
   state.label_element.innerText = text;
 }
 
-
-function fireAlertMessage () {
-
+function fireAlertMessage() {
   // are we in range for show a message?
 
   let absolute_time = readTotalStoredTime();
-  let message_index = Math.floor((state.TIME_LIMIT_MS - absolute_time) / (1000 * 60))
-  if (message_index > 4){
+  let message_index = Math.floor(
+    (state.TIME_LIMIT_MS - absolute_time) / (1000 * 60),
+  );
+  if (message_index > 4) {
     return;
   }
   message_index += 1; // for visual purposes
   debug(`This is the amount of time left ${message_index} minute(s)`);
 
   try {
-
     // check the message hasn't been fired
 
     let data = state.last_read_data;
@@ -453,52 +432,44 @@ function fireAlertMessage () {
 
     data["minute_message_launched"].push(message_index);
     writeData(data);
-    alert(`Youtube Timer: Te quedan ${message_index} minutos de video`)
-
-  } catch(error) {
+    alert(`Youtube Timer: Te quedan ${message_index} minutos de video`);
+  } catch (error) {
     debug_error(error);
     return;
   }
 }
 
-
 // ===========================================
 // Utils
 // ===========================================
-
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
-
 function formatMilliseconds(duration) {
-    let seconds = Math.floor((duration / 1000) % 60),
-        minutes = Math.floor((duration / (1000 * 60)) % 60),
-        hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-    hours = (hours < 10) ? "0" + hours : hours;
-    minutes = (minutes < 10) ? "0" + minutes : minutes;
-    seconds = (seconds < 10) ? "0" + seconds : seconds;
-    return hours + ":" + minutes + ":" + seconds;
+  let seconds = Math.floor((duration / 1000) % 60),
+    minutes = Math.floor((duration / (1000 * 60)) % 60),
+    hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+  hours = hours < 10 ? "0" + hours : hours;
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  seconds = seconds < 10 ? "0" + seconds : seconds;
+  return hours + ":" + minutes + ":" + seconds;
 }
-
 
 function getCurrentMonthDay() {
   // 4 hours in the past so that the reset is issued at 4 AM instead of 12 AM
   // This would prevent possible relapse after 12 AM
-  return new Date(Date.now() - (1000 * 60 * 60 * 4)).getDate();
+  return new Date(Date.now() - 1000 * 60 * 60 * 4).getDate();
 }
-
 
 async function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
 
 // ===========================================
 // Init
 // ===========================================
-
 
 console.log("woy: youtube limit: start");
 setup();
