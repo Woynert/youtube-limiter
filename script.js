@@ -46,7 +46,7 @@ const state = {
   INSTANCE_ID: getRandomInt(65535),
   total_elapsed_time: 0,
   chunk_time_start: Date.now(), // the time where we start counting time (updated each time we save)
-  chunk_elapsed_time: 0, // the time where we start counting time (updated each time we save)
+  chunk_elapsed_time: 0,
   was_video_playing: false,
   visual_last_saved_time: 0,
 
@@ -55,6 +55,7 @@ const state = {
   SAVE_EVERY_TICKS: 5,
   DATA_KEY: "woy_record_data",
   CHECK_MESSAGE_EVERY_TICKS: 15,
+  last_read_data: null, // cache remote data
 
   // DOM UI
 
@@ -63,9 +64,8 @@ const state = {
 
   video_element: null,
   style_element: null,
-	button_element: null,
-	label_element: null,
-
+  button_element: null,
+  label_element: null,
 }
 
 
@@ -81,7 +81,7 @@ function debug(text){
 
 function debug_error(error){
   if (!state.debugging) return;
-  debug_error(error);
+  console.error(error);
 }
 
 
@@ -102,13 +102,15 @@ function process() {
     state.controls_were_injected = true;
   }
 
+  // poll latest data
+  readData();
   let absolute_time = getAbsoluteElapsedTime();
 
   // track time
   if (isVideoPlaying()) {
     if (!state.was_video_playing) {
-      state.chunk_time_start = Date.now()
       state.was_video_playing = true;
+      state.chunk_time_start = Date.now()
     }
 
     calculateTime();
@@ -212,28 +214,30 @@ function getAbsoluteElapsedTime() {
 // ===========================================
 
 
-// @returns JSON (RecordData)
-function readData (){
-
-  const raw_data = localStorage.getItem(state.DATA_KEY);
-
-  // convert to JSON
-  if (raw_data) {
-    try {
-      const data = JSON.parse(raw_data);
-      return data;
-    } catch (error) {
-      debug_error(error);
+// updates local data cache
+async function readData (){
+  try {
+    const raw_data = await browser.storage.local.get(state.DATA_KEY);
+    if (raw_data) {
+        const data = JSON.parse(raw_data[state.DATA_KEY]);
+        state.last_read_data = data;
+        return;
     }
+  } catch (error) {
+    debug_error(error);
   }
 
-  return null;
+  state.last_read_data = null;
 }
 
 
 // @argument JSON Object
 function writeData (data){
-  localStorage.setItem(state.DATA_KEY, JSON.stringify(data));
+  if (data == null) return;
+  let to_store = {};
+  to_store[state.DATA_KEY] = JSON.stringify(data);
+
+  browser.storage.local.set(to_store);
 }
 
 
@@ -242,7 +246,7 @@ function writeData (data){
 function writeElapsedTime (seed, time){
 
   let reset_data = false;
-  let data = readData();
+  let data = state.last_read_data;
   let instance_id = `${state.INSTANCE_ID}`;
 
   // data wasn't found
@@ -285,7 +289,7 @@ function writeElapsedTime (seed, time){
 function readTotalStoredTime () {
 
   let reset_data = false;
-  let data = readData();
+  let data = state.last_read_data;
   let instance_id = `${state.INSTANCE_ID}`;
 
   try {
@@ -438,7 +442,7 @@ function fireAlertMessage () {
 
     // check the message hasn't been fired
 
-    let data = readData();
+    let data = state.last_read_data;
     let messages = data["minute_message_launched"];
     if (messages.includes(message_index)) {
       debug(`Message ${message_index} has already been fired`);

@@ -1,13 +1,13 @@
 {
   "manifest_version": 2,
   "name": "Youtube Limiter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Youtube Limiter",
   "icons": {
     "48": "icons/border-48.png"
   },
 
-  "permissions": ["scripting", "<all_urls>"],
+  "permissions": ["storage", "scripting", "<all_urls>"],
 
   "background": {
     "scripts": ["main.js"],
