@@ -84,7 +84,7 @@ function setup() {
   debug("running setup");
 }
 
-function process() {
+async function process() {
   // setup
   if (!isVideoElementValid()) {
     getVideoElement();
@@ -97,7 +97,7 @@ function process() {
   }
 
   // poll latest data
-  readData();
+  await readData();
   let absolute_time = getAbsoluteElapsedTime();
 
   // track time
@@ -143,7 +143,7 @@ function process() {
     }
   }
 
-  //debug(`playing? ${isVideoPlaying()}\nchunk ${formatMilliseconds(getLocalElapsedTime())}\nstored ${formatMilliseconds(readTotalStoredTime())}\nstored-curr ${formatMilliseconds(getAbsoluteElapsedTime())}`)
+  //debug(`playing? ${isVideoPlaying()}\nchunk ${formatMilliseconds(getLocalElapsedTime())}\nstored ${formatMilliseconds(readTotalStoredTime())}\nstored-curr ${formatMilliseconds(getAbsoluteElapsedTime())}`);
 }
 
 async function processLoop() {
@@ -215,6 +215,7 @@ async function readData() {
     if (raw_data) {
       const data = JSON.parse(raw_data[state.DATA_KEY]);
       state.last_read_data = data;
+      debug(`readData: success ${readTotalStoredTime()}`);
       return;
     }
   } catch (error) {
@@ -231,6 +232,7 @@ function writeData(data) {
   to_store[state.DATA_KEY] = JSON.stringify(data);
 
   browser.storage.local.set(to_store);
+  debug("writeData: success");
 }
 
 // @argument seed: int
