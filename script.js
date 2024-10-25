@@ -128,8 +128,7 @@ async function process() {
   }
 
   // update visuals
-  // TODO: Update only when window is visible
-  if (state.controls_were_injected) {
+  if (state.controls_were_injected && !document.hidden) {
     // update label
 
     setLabelText(formatMilliseconds(absolute_time));
