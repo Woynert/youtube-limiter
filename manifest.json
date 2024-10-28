@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Youtube Limiter",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Youtube Limiter",
   "icons": {
     "48": "icons/border-48.png"

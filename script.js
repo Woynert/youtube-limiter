@@ -70,6 +70,10 @@ const state = {
 // Loop / Time Tracking
 // ===========================================
 
+function out(text) {
+  console.log(`woy: youtube limit: ${text}`);
+}
+
 function debug(text) {
   if (!state.debugging) return;
   console.log(`woy: youtube limit: ${text}`);
@@ -99,6 +103,9 @@ async function process() {
   // poll latest data
   await readData();
   let absolute_time = getAbsoluteElapsedTime();
+
+  // check if reset is needed
+  ensureDataIsntExpired();
 
   // track time
   if (isVideoPlaying()) {
@@ -234,12 +241,10 @@ function writeData(data) {
   debug("writeData: success");
 }
 
-// @argument seed: int
-// @argument time: int
-function writeElapsedTime(seed, time) {
+// if data isn't from today then reset it (writes)
+function ensureDataIsntExpired() {
   let reset_data = false;
   let data = state.last_read_data;
-  let instance_id = `${state.INSTANCE_ID}`;
 
   // data wasn't found
   if (data == null) {
@@ -255,20 +260,36 @@ function writeElapsedTime(seed, time) {
     debug_error(error);
     reset_data = true;
   }
-
-  // reset data
-  if (reset_data) {
-    debug("resetting data");
-    data = {
-      day: getCurrentMonthDay(),
-      records: {},
-      minute_message_launched: [],
-    };
+  if (!reset_data) {
+    return;
   }
 
+  // reset data
+  out("resetting data");
+  data = {
+    day: getCurrentMonthDay(),
+    records: {},
+    minute_message_launched: [],
+  };
+  state.visual_last_saved_time = 0;
+
+  // write
+  debug(JSON.stringify(data));
+  writeData(data);
+}
+
+function writeElapsedTime() {
+  let data = state.last_read_data;
+  let instance_id = `${state.INSTANCE_ID}`;
+
   // save record
-  data["records"][instance_id] = getLocalElapsedTime();
-  state.visual_last_saved_time = data["records"][instance_id];
+  try {
+    data["records"][instance_id] = getLocalElapsedTime();
+    state.visual_last_saved_time = data["records"][instance_id];
+  } catch (error) {
+    debug_error(error);
+    return;
+  }
 
   // write
   debug(JSON.stringify(data));
@@ -472,6 +493,6 @@ async function sleep(ms) {
 // Init
 // ===========================================
 
-console.log("woy: youtube limit: start");
+out("start");
 setup();
 processLoop();
