@@ -4,6 +4,8 @@
   },
   "scripts": {
     "format": "npx prettier . -w",
-    "package": "zip -r extension-$(date +%s).zip *.js *.html icons manifest.json"
+    "package": "zip -r extension-firefox-$(date +%s).zip *.js *.html icons manifest.json",
+    "package-chrome": "mkdir -p chrome && cp -r *.js *.html icons manifest-chrome.json chrome/. ; cd chrome && mv manifest-chrome.json manifest.json && zip -r extension-chrome-$(date +%s).zip *.js *.html icons manifest.json",
+    "clean": "rm -r chrome"
   }
 }

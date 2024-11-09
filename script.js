@@ -16,6 +16,11 @@
 // @run-at document-start
 // ==/UserScript==
 
+// chrome support
+if (typeof chrome !== "undefined") {
+  browser = chrome;
+}
+
 // ===========================================
 // Data
 // ===========================================
