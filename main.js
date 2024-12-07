@@ -3,6 +3,7 @@ const script = {
   js: ["script.js"],
   matches: ["*://*.youtube.com/*", "*://*.youtu.be/*"],
   runAt: "document_start",
+  allFrames: true,
 };
 (async () => {
   console.log("I: Background script started");
