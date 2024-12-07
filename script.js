@@ -377,6 +377,7 @@ function setupInjection() {
         border-bottom-style: solid;
         user-select: none;
         user-select: none;
+        color: black;
       }
       .woy-yt-timer__container-limited{
         border-bottom-color: #1f820a;
@@ -384,6 +385,7 @@ function setupInjection() {
       #woy-yt-timer__label{
         display: inline-block;
         font-family: mono;
+        margin: 0;
       }
       #woy-yt-timer__button{
         display: inline-block;
